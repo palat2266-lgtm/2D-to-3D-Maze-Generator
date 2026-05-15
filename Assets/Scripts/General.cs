@@ -14,10 +14,33 @@ public class General : MonoBehaviour
 
     bool[,] m = new bool[20,20];
 
+    BinaryReader br;
+    BinaryWriter bw;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        for(i = 0; i < 20; i++)
+        BinaryReader bw = new BinaryReader(File.Open("map", FileMode.Open));
+
+        for (i = 0; i < 20; i++)
+        {
+            for (j = 0; j < 20; j++)
+            {
+                m[i, j] = bw.ReadBoolean();
+
+                Instantiate(
+                    m[i, j] ? CubeTexture : CubeEmpty,
+                    new Vector3(i, 0.5f, j),
+                    Quaternion.Euler(0, 0, 0)
+                );
+            }
+        }
+
+        bw.Close();
+
+
+
+
+        /*for(i = 0; i < 20; i++)
         {
             for (j = 0; j < 20; j++) m[i,j] = true;
         }
@@ -32,7 +55,7 @@ public class General : MonoBehaviour
             {
                 Instantiate(m[i, j] ? CubeTexture : CubeEmpty, new Vector3(i, 0.5f, j), Quaternion.Euler(0, 0, 0));
             }
-        }
+        }*/
 
     }
 
@@ -53,6 +76,7 @@ public class General : MonoBehaviour
                     if (hit.collider.tag == "Untagged") return;
                         Instantiate(hit.collider.tag == "EmptyObj" ? CubeTexture : CubeEmpty, hit.collider.GetComponent<Transform>().position, 
                             Quaternion.Euler(0, 0, 0));
+                    m[(int)hit.collider.transform.position.x, (int)hit.collider.transform.position.z] = hit.collider.tag.Equals("EmptyObj") ? true : false;
                     Destroy(hit.collider.gameObject);
                 }
             }
@@ -93,6 +117,13 @@ public class General : MonoBehaviour
 
     public void BClick()
     {
+        bw = new BinaryWriter(File.Open("map",FileMode.OpenOrCreate));
+        for (i = 0; i < 20; i++)
+        {
+            for (j = 0; j < 20; j++) bw.Write(m[i, j]);
+        }
+        bw.Close();
+
         GameObject[] tmp = GameObject.FindGameObjectsWithTag("EmptyObj");
         for(i=0; i < tmp.Length;i++)
         {
