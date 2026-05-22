@@ -7,6 +7,8 @@ TagManager:
   - EmptyObj
   - TextureObj
   - Buttons
+  - FloorObj
+  - TextureObj1
   layers:
   - Default
   - TransparentFX

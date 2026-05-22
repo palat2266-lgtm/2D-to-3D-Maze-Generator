@@ -9,62 +9,69 @@ public class General : MonoBehaviour
 
     int i, j, k;
     bool play=false, f1;
-    public GameObject CubeTexture, CubeEmpty;
+    public GameObject CubeTexture, CubeEmpty, CubeFloor, CubeTexture2;
     RaycastHit hit;
 
     bool[,] m = new bool[20,20];
 
     BinaryReader br;
     BinaryWriter bw;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    public GameObject Lift;
+    public GameObject ButtonUp;
+    public GameObject ButtonDown;
+    
     void Awake()
     {
-        BinaryReader bw = new BinaryReader(File.Open("map", FileMode.Open));
 
-        for (i = 0; i < 20; i++)
+        if (File.Exists("map"))
         {
-            for (j = 0; j < 20; j++)
-            {
-                m[i, j] = bw.ReadBoolean();
+            br = new BinaryReader(File.Open("map", FileMode.Open));
 
-                Instantiate(
+            for (i = 0; i < 20; i++)
+            {
+                for (j = 0; j < 20; j++)
+                {
+                    m[i, j] = br.ReadBoolean();
+
+                    Instantiate(
                     m[i, j] ? CubeTexture : CubeEmpty,
                     new Vector3(i, 0.5f, j),
                     Quaternion.Euler(0, 0, 0)
                 );
+                }
             }
+
+            br.Close();
         }
-
-        bw.Close();
-
-
-
-
-        /*for(i = 0; i < 20; i++)
+        else
         {
-            for (j = 0; j < 20; j++) m[i,j] = true;
-        }
-        for (i = 1;i < 19; i++)
-        {
-            m[i,1] = m[i,18] = m[1,i] = m[18,i] = false;
-        }
-
-        for (i = 0; i < 20; i++)
-        {
-            for (j = 0; j < 20; j++)
+            for (i = 0; i < 20; i++)
             {
-                Instantiate(m[i, j] ? CubeTexture : CubeEmpty, new Vector3(i, 0.5f, j), Quaternion.Euler(0, 0, 0));
+                for (j = 0; j < 20; j++) m[i, j] = true;
             }
-        }*/
+            for (i = 1; i < 19; i++)
+            {
+                m[i, 1] = m[i, 18] = m[1, i] = m[18, i] = false;
+            }
 
+            for (i = 0; i < 20; i++)
+            {
+                for (j = 0; j < 20; j++)
+                {
+                    Instantiate(m[i, j] ? CubeTexture : CubeEmpty, new Vector3(i, 0.5f, j), Quaternion.Euler(0, 0, 0));
+                }
+            }
+        }
     }
+
 
     private void Start()
     {
         
     }
 
-    // Update is called once per frame
+    
     void Update()
     {
         if (play == false) //editer
@@ -136,8 +143,45 @@ public class General : MonoBehaviour
             Instantiate(CubeTexture, tmp1[i].GetComponent<Transform>().position + v,
                             Quaternion.Euler(0, 0, 0));
         }
+        //Debug.Log(m[5, 5]);
+        //  Потолок + 2 поверх
+        for (i = 0; i < 20; i++)
+        {
+            for (j = 0; j < 20; j++)
+            {
+                // ПОТОЛОК (дірка в [0,0])
+                if (!(i == 1 && j == 18))
+                {
+                    Instantiate(CubeFloor, new Vector3(i, 2.5f, j), Quaternion.identity);
+                }
 
-        transform.position = new Vector3(1, 0.5f, 18);
+                // 2 РІВЕНЬ (копія першого)
+                if (m[i, j])
+                {
+                    Instantiate(CubeTexture2, new Vector3(i, 3.5f, j), Quaternion.identity);
+                    Instantiate(CubeTexture2, new Vector3(i, 4.5f, j), Quaternion.identity);
+                }
+            }
+        }
+
+        Vector3 liftPos = new Vector3(1, 0.5f, 18); // там де твоя дірка
+
+        GameObject liftObj = Instantiate(Lift, liftPos, Quaternion.identity);
+
+        // кнопки поруч
+        Quaternion buttonRotation = Quaternion.Euler(0f, 0f, 90f);
+
+        GameObject b1 = Instantiate(ButtonUp, liftPos + new Vector3(-0.5f, 0.5f, 0), buttonRotation);
+        GameObject b2 = Instantiate(ButtonDown, liftPos + new Vector3(-0.5f, 3.5f, 0f), buttonRotation);
+
+        //  Зв'язуємо кнопки з ліфтом
+        b1.GetComponent<ButtonLift>().lift = liftObj.GetComponent<LiftScript>();
+        b1.GetComponent<ButtonLift>().up = true;
+
+        b2.GetComponent<ButtonLift>().lift = liftObj.GetComponent<LiftScript>();
+        b2.GetComponent<ButtonLift>().up = false;
+
+        transform.position = new Vector3(1, 1f, 18);
         transform.rotation = Quaternion.Euler(0, 0, 0);
 
         play = true;
