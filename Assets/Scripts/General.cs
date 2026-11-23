@@ -6,7 +6,7 @@ using Cursor = UnityEngine.Cursor;
 
 public class General : MonoBehaviour
 {
-
+    public static bool onStairs = false;
     int i, j, k;
     bool play=false, f1;
     public GameObject CubeTexture, CubeEmpty, CubeFloor, CubeTexture2;
@@ -111,7 +111,14 @@ public class General : MonoBehaviour
 
             Vector3 move = right * x + forward * z;
 
-            transform.position += move * speed * Time.deltaTime;
+            if (!onStairs)
+            {
+                transform.position += move * speed * Time.deltaTime;
+            }
+            else
+            {
+                transform.position += new Vector3(move.x, 0, move.z) * speed * Time.deltaTime;
+            }
 
             float mouseSensitivity = 200f;
 
